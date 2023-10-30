@@ -7,7 +7,7 @@ import Header from "./components/Header";
 import Button from "./components/Button";
 const ethers = require("ethers");
 const {ethereum} = window;
-const notesArray = [];
+var notesArray = [];
 const APITOKEN = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJkaWQ6ZXRocjoweDlCRDhBODJiRDNGMjcyRjFCZDI1REYwNWZlOUZEMEM5QTRhYjA3QkYiLCJpc3MiOiJuZnQtc3RvcmFnZSIsImlhdCI6MTY5ODMxODA1NTAwMSwibmFtZSI6IkZvcm1UZXh0In0.-AnInK4pomMjGPYTNUsnt1MjTd3TlS8HsgrMA759zNs"
 
 function App() {
@@ -61,6 +61,7 @@ function App() {
       const cid = await client.storeBlob(content)
       const transactionContract = getEthereumContract();
       await transactionContract.setUserNotes(cid, fileName);
+      alert("Note created!");
       
     } catch (error) {
       console.log(error);
@@ -68,47 +69,55 @@ function App() {
   };
 
   const retrieveOldNote = async (fileName) => {
-    const transactionContract = getEthereumContract();
+    try {
+      const transactionContract = getEthereumContract();
     const CID = await transactionContract.getNoteCID(fileName);
     fetch(`https://ipfs.io/ipfs/${CID}`)
     .then(response => response.text())
     .then(data => {
     settextAreaString(data);
-  });
-  }
+        });
+    } catch (error) {
+      console.log(error);
+    }
+    
+  };
 
   const displayNotes = async() => {
-    const transactionContract = getEthereumContract();
+    try {
+      const transactionContract = getEthereumContract();
     //You should obtain an string of file names separated by an underscore
     const text_Notes = await transactionContract.getAllNoteNames();
-    const notesArray = text_Notes.split("_");
-    notesArray.shift();
-    for (let i = 0; i < notesArray.length; i++)
-    {      
-    if (notesArray[i].length === 0) {
+    console.log(text_Notes);
+    notesArray = text_Notes.split(" ");
+
+    for (var i=0; i<notesArray.length; i++) {
+      if (notesArray[i].length === 0) {
         notesArray.splice(i,1);
-     }
-  }
+      }
+    }
     console.log(notesArray);
+    } catch (error) {
+      console.log(error);
+    }
+    
   }
 
 const deleteOldNote = async(APITOKEN, fileName) => {
-  // retrieve the CID using the fileName
+  try {
+    // retrieve the CID using the fileName
   const transactionContract = getEthereumContract();
   const CID = await transactionContract.getNoteCID(fileName);
   const client = new NFTStorage({ token: APITOKEN });
   await client.delete(CID);
   // delete the the Note struct on the blockchain based on the Note file name
   await transactionContract.deleteNoteInfo(fileName);
-  for (let i = 0; i < notesArray.length; i++)
-  {  
-  if (notesArray[i].length === 0) {
-        notesArray.splice(i,1);
-     }
-  }
-  console.log(notesArray);
   // update the Display File Names list
   document.forms[0].reset();
+  } catch (error) {
+    console.log(error);
+  }
+  
   }
 
   return (
@@ -132,9 +141,7 @@ const deleteOldNote = async(APITOKEN, fileName) => {
         {/*<Button type = "button" onClick={() => editOldNote(APITOKEN,fileName)} text = "Edit Note" />*/}
         <Button type = "button" onClick={() => deleteOldNote(APITOKEN, fileName)} text = "Delete Note" /> <br/> <br/> <br/>
         <Button type = "button" onClick={() => displayNotes()} text = "Display Notes" />
-        <ul>{notesArray[0]}</ul>
-        <ul>{notesArray[1]}</ul>
-        <ul>{notesArray[2]}</ul>
+        
       </div>
       </header>
     </div>
