@@ -21,7 +21,7 @@
   padding: 15px 32px;
   text-align: right;
   text-decoration: none;
-  display: inline-block;
+  display: block;
   font: menu;
   font-size: 16px;
   margin: 0;
@@ -39,13 +39,12 @@
   text-align: center;
   text-decoration: none;
   align-items: center;
-  overflow-wrap: "break-word";
   display: block;
   font: menu;
   font-size: 16px;
   margin: 0;
   position: absolute;
-  top: 50%;
+  bottom: 20%;
   left: 50%;
   -ms-transform: translate(-50%, -50%);
   transform: translate(-50%, -50%);

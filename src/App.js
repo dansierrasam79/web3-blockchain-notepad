@@ -11,9 +11,8 @@ var notesArray = [];
 const APITOKEN = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJkaWQ6ZXRocjoweDlCRDhBODJiRDNGMjcyRjFCZDI1REYwNWZlOUZEMEM5QTRhYjA3QkYiLCJpc3MiOiJuZnQtc3RvcmFnZSIsImlhdCI6MTY5ODMxODA1NTAwMSwibmFtZSI6IkZvcm1UZXh0In0.-AnInK4pomMjGPYTNUsnt1MjTd3TlS8HsgrMA759zNs"
 
 function App() {
-  const [fileNames, setfileNames] = useState(null);
   const [textAreaString, settextAreaString] = useState("");
-  const [fileName, setfileName] = useState(null);
+  const [fileName, setfileName] = useState("");
   const [walletAddress, setwalletAddress] = useState(null);
 
   const getEthereumContract = () => {
@@ -52,6 +51,7 @@ function App() {
     const formText = e.target.elements.Content;
     addNewNote(APITOKEN, fileName, formText.value);
     document.forms[0].reset();
+
   }
 
   const addNewNote = async (APITOKEN, fileName, formTextval) => {
@@ -83,12 +83,24 @@ function App() {
     
   };
 
+  const editOldNote = async(APITOKEN, fileName, textAreaString) => {
+    try {
+      console.log(APITOKEN, fileName, textAreaString);
+      // Retrieve cid from the blockchain
+      deleteOldNote(APITOKEN, fileName);
+      addNewNote(APITOKEN, fileName, textAreaString);
+      document.forms[0].reset();
+      alert("Note edited");
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
   const displayNotes = async() => {
     try {
       const transactionContract = getEthereumContract();
     //You should obtain an string of file names separated by an underscore
     const text_Notes = await transactionContract.getAllNoteNames();
-    console.log(text_Notes);
     notesArray = text_Notes.split(" ");
 
     for (var i=0; i<notesArray.length; i++) {
@@ -96,11 +108,9 @@ function App() {
         notesArray.splice(i,1);
       }
     }
-    console.log(notesArray);
     } catch (error) {
       console.log(error);
     }
-    
   }
 
 const deleteOldNote = async(APITOKEN, fileName) => {
@@ -117,7 +127,6 @@ const deleteOldNote = async(APITOKEN, fileName) => {
   } catch (error) {
     console.log(error);
   }
-  
   }
 
   return (
@@ -131,17 +140,23 @@ const deleteOldNote = async(APITOKEN, fileName) => {
       </div>
       <form id = "myForm" onSubmit={handleSubmit} className = "center">
       <br/>
-      <input type = "text" placeholder = "Enter Note Name" onChange={(e)=>(setfileName(e.target.value))} />
+      <input type = "text" value = {fileName} placeholder = "Enter Note Name" onChange={(e)=>(setfileName(e.target.value))} name = "txtfile" />
       <br/>
-        <textarea defaultValue = {textAreaString} placeholder = "Enter your text here" name = "Content" rows={10} cols={60}/> <br/>
+        <textarea defaultValue = {textAreaString} placeholder = "Enter your text here" onChange={(e)=>(settextAreaString(e.target.value))} name = "Content" rows={10} cols={60}/> <br/>
       </form>
       <div className = "bottom">
         <button type = "submit" form = "myForm">Submit Note</button>
         <Button type = "button" onClick={() => retrieveOldNote(fileName)} text = "Read Note" />
-        {/*<Button type = "button" onClick={() => editOldNote(APITOKEN,fileName)} text = "Edit Note" />*/}
+        <Button type = "button" onClick={() => editOldNote(APITOKEN, fileName, textAreaString)} text = "Edit Note"/>
         <Button type = "button" onClick={() => deleteOldNote(APITOKEN, fileName)} text = "Delete Note" /> <br/> <br/> <br/>
         <Button type = "button" onClick={() => displayNotes()} text = "Display Notes" />
-        
+        {
+                notesArray.map((note) => (
+                    <div key={note} >
+                        {note}
+                    </div>
+                ))
+            }
       </div>
       </header>
     </div>
