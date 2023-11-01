@@ -108,6 +108,7 @@ function App() {
         notesArray.splice(i,1);
       }
     }
+
     } catch (error) {
       console.log(error);
     }
@@ -140,23 +141,23 @@ const deleteOldNote = async(APITOKEN, fileName) => {
       </div>
       <form id = "myForm" onSubmit={handleSubmit} className = "center">
       <br/>
-      <input type = "text" value = {fileName} placeholder = "Enter Note Name" onChange={(e)=>(setfileName(e.target.value))} name = "txtfile" />
+      <input type = "text" value = {fileName} onChange={(e)=>(setfileName(e.target.value))} name = "txtfile" />
       <br/>
-        <textarea defaultValue = {textAreaString} placeholder = "Enter your text here" onChange={(e)=>(settextAreaString(e.target.value))} name = "Content" rows={10} cols={60}/> <br/>
+        <textarea defaultValue = {textAreaString} onChange={(e)=>(settextAreaString(e.target.value))} name = "Content" rows={10} cols={60}/> <br/>
       </form>
       <div className = "bottom">
         <button type = "submit" form = "myForm">Submit Note</button>
         <Button type = "button" onClick={() => retrieveOldNote(fileName)} text = "Read Note" />
         <Button type = "button" onClick={() => editOldNote(APITOKEN, fileName, textAreaString)} text = "Edit Note"/>
         <Button type = "button" onClick={() => deleteOldNote(APITOKEN, fileName)} text = "Delete Note" /> <br/> <br/> <br/>
-        <Button type = "button" onClick={() => displayNotes()} text = "Display Notes" />
-        {
-                notesArray.map((note) => (
-                    <div key={note} >
-                        {note}
-                    </div>
-                ))
-            }
+        <Button type = "button" onClick={() => displayNotes()} text = "Display Notes" /> <br/>
+        {notesArray.map((note) => (
+            <label key={note} >
+                {note.concat(" ")} 
+            </label>
+        ))
+
+    }
       </div>
       </header>
     </div>

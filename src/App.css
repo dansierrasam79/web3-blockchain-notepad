@@ -44,8 +44,9 @@
   font-size: 16px;
   margin: 0;
   position: absolute;
-  bottom: 20%;
+  bottom: 35%;
   left: 50%;
   -ms-transform: translate(-50%, -50%);
   transform: translate(-50%, -50%);
 }
+
