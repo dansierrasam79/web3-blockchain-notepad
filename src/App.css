@@ -1,18 +1,18 @@
 .App {
   text-align: center;
+  height: 100vh;
+  background-color: #66023c;
 }
 
 .center {
-  background-color: #66023c;
   display: block;
-  min-height: 100vh;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   font-size: 16px;
   color: white;
-  top: 25%;
-  right: 50%;
+  /*top: 35%;
+  right: 50%;*/
 }
 
 .right {
@@ -35,18 +35,12 @@
 .bottom {
   border: none;
   color: white;
-  padding: 15px 32px;
   text-align: center;
+  padding-top: 7px;
   text-decoration: none;
   align-items: center;
-  display: block;
+  display: inline;
   font: menu;
   font-size: 16px;
   margin: 0;
-  position: absolute;
-  bottom: 35%;
-  left: 50%;
-  -ms-transform: translate(-50%, -50%);
-  transform: translate(-50%, -50%);
 }
-

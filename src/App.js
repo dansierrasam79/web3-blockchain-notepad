@@ -1,5 +1,5 @@
 import './App.css';
-import React, {useState} from "react";
+import React, {useState, useEffect} from "react";
 import { ContractABI, ContractAddress } from "./utils/contractdeets";
 import {NFTStorage, Blob} from 'nft.storage';
 import Logo from "./components/Logo";
@@ -16,15 +16,19 @@ function App() {
   const [walletAddress, setwalletAddress] = useState(null);
 
   const getEthereumContract = () => {
-    if (ethereum) {
-      const provider = new ethers.providers.Web3Provider(ethereum);
-      const signer = provider.getSigner();
-      const transactionContract = new ethers.Contract(
-        ContractAddress,
-        ContractABI,
-        signer
-      );
-      return transactionContract;
+    try {
+      if (ethereum) {
+        const provider = new ethers.providers.Web3Provider(ethereum);
+        const signer = provider.getSigner();
+        const transactionContract = new ethers.Contract(
+          ContractAddress,
+          ContractABI,
+          signer
+        );
+        return transactionContract;
+      }
+    } catch (error) {
+      console.log(error);
     }
   };
 
@@ -41,17 +45,16 @@ function App() {
         setwalletAddress(accounts[0]);
         console.log("Connected", walletAddress);
       }
-    } catch (error) {
+      } catch (error) {
       console.log(error);
     }
-  };
+    };
 
   const handleSubmit = (e) => {
     e.preventDefault();
     const formText = e.target.elements.Content;
     addNewNote(APITOKEN, fileName, formText.value);
     document.forms[0].reset();
-
   }
 
   const addNewNote = async (APITOKEN, fileName, formTextval) => {
@@ -80,7 +83,6 @@ function App() {
     } catch (error) {
       console.log(error);
     }
-    
   };
 
   const editOldNote = async(APITOKEN, fileName, textAreaString) => {
@@ -96,6 +98,22 @@ function App() {
     }
   };
 
+  const deleteOldNote = async(APITOKEN, fileName) => {
+    try {
+      // retrieve the CID using the fileName
+    const transactionContract = getEthereumContract();
+    const CID = await transactionContract.getNoteCID(fileName);
+    const client = new NFTStorage({ token: APITOKEN });
+    await client.delete(CID);
+    // delete the the Note struct on the blockchain based on the Note file name
+    await transactionContract.deleteNoteInfo(fileName);
+    // update the Display File Names list
+    document.forms[0].reset();
+    } catch (error) {
+      console.log(error);
+    }
+    }
+
   const displayNotes = async() => {
     try {
       const transactionContract = getEthereumContract();
@@ -108,27 +126,14 @@ function App() {
         notesArray.splice(i,1);
       }
     }
-
     } catch (error) {
       console.log(error);
     }
   }
 
-const deleteOldNote = async(APITOKEN, fileName) => {
-  try {
-    // retrieve the CID using the fileName
-  const transactionContract = getEthereumContract();
-  const CID = await transactionContract.getNoteCID(fileName);
-  const client = new NFTStorage({ token: APITOKEN });
-  await client.delete(CID);
-  // delete the the Note struct on the blockchain based on the Note file name
-  await transactionContract.deleteNoteInfo(fileName);
-  // update the Display File Names list
-  document.forms[0].reset();
-  } catch (error) {
-    console.log(error);
-  }
-  }
+  useEffect(() => {
+    displayNotes();
+  });
 
   return (
     <div className="App">
@@ -141,22 +146,23 @@ const deleteOldNote = async(APITOKEN, fileName) => {
       </div>
       <form id = "myForm" onSubmit={handleSubmit} className = "center">
       <br/>
-      <input type = "text" value = {fileName} onChange={(e)=>(setfileName(e.target.value))} name = "txtfile" />
+      <input type = "text" placeholder = "Enter filename" value = {fileName} onChange={(e)=>(setfileName(e.target.value))} name = "txtfile" />
       <br/>
-        <textarea defaultValue = {textAreaString} onChange={(e)=>(settextAreaString(e.target.value))} name = "Content" rows={10} cols={60}/> <br/>
+        <textarea defaultValue = {textAreaString} placeholder = "Enter Note text here" onChange={(e)=>(settextAreaString(e.target.value))} name = "Content" rows={10} cols={60}/> <br/>
       </form>
       <div className = "bottom">
-        <button type = "submit" form = "myForm">Submit Note</button>
+        <button type = "submit" form = "myForm">Create Note</button>
         <Button type = "button" onClick={() => retrieveOldNote(fileName)} text = "Read Note" />
         <Button type = "button" onClick={() => editOldNote(APITOKEN, fileName, textAreaString)} text = "Edit Note"/>
         <Button type = "button" onClick={() => deleteOldNote(APITOKEN, fileName)} text = "Delete Note" /> <br/> <br/> <br/>
-        <Button type = "button" onClick={() => displayNotes()} text = "Display Notes" /> <br/>
+      </div>
+      <div>
+      <h3>Created File Names</h3>
         {notesArray.map((note) => (
             <label key={note} >
-                {note.concat(" ")} 
+                {note.concat(" ")}
             </label>
         ))
-
     }
       </div>
       </header>
