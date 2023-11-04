@@ -9,17 +9,28 @@ const ethers = require("ethers");
 const {ethereum} = window;
 var notesArray = [];
 const APITOKEN = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJkaWQ6ZXRocjoweDlCRDhBODJiRDNGMjcyRjFCZDI1REYwNWZlOUZEMEM5QTRhYjA3QkYiLCJpc3MiOiJuZnQtc3RvcmFnZSIsImlhdCI6MTY5ODMxODA1NTAwMSwibmFtZSI6IkZvcm1UZXh0In0.-AnInK4pomMjGPYTNUsnt1MjTd3TlS8HsgrMA759zNs"
+const CHAIN_ID = 80001;
+const NETWORK_NAME = "Mumbai";
 
 function App() {
   const [textAreaString, settextAreaString] = useState("");
   const [fileName, setfileName] = useState("");
   const [walletAddress, setwalletAddress] = useState(null);
 
+  const getChainID = async(provider) => {
+    const {chainId} =  await provider.getNetwork();
+    if (chainId !== CHAIN_ID) {
+      window.alert(`Please switch to the ${NETWORK_NAME} network`);
+      throw new Error(`Please switch to the ${NETWORK_NAME} network`);
+    }
+  }
+
   const getEthereumContract = () => {
     try {
       if (ethereum) {
         const provider = new ethers.providers.Web3Provider(ethereum);
         const signer = provider.getSigner();
+        getChainID(provider);
         const transactionContract = new ethers.Contract(
           ContractAddress,
           ContractABI,
@@ -50,11 +61,26 @@ function App() {
     }
     };
 
+    const findIteminArray = (element) => {
+      var length = notesArray.length;
+      for (var i = 0; i < length; i++) {
+      if (notesArray[i] === element)
+       return true;
+      }
+      return false;
+     }
+
   const handleSubmit = (e) => {
     e.preventDefault();
     const formText = e.target.elements.Content;
-    addNewNote(APITOKEN, fileName, formText.value);
-    document.forms[0].reset();
+    const val = findIteminArray(fileName);
+    if (fileName !== "" && formText.value !== "" && val === false) {
+      addNewNote(APITOKEN, fileName, formText.value);
+      document.forms[0].reset();
+    }
+    else {
+      alert("ERROR: Filename missing or duplicate")
+    }
   }
 
   const addNewNote = async (APITOKEN, fileName, formTextval) => {
@@ -73,13 +99,20 @@ function App() {
 
   const retrieveOldNote = async (fileName) => {
     try {
-      const transactionContract = getEthereumContract();
-    const CID = await transactionContract.getNoteCID(fileName);
-    fetch(`https://ipfs.io/ipfs/${CID}`)
-    .then(response => response.text())
-    .then(data => {
-    settextAreaString(data);
+      const val = findIteminArray(fileName);
+      if (fileName !== "" && val === true) {
+        const transactionContract = getEthereumContract();
+        const CID = await transactionContract.getNoteCID(fileName);
+        fetch(`https://ipfs.io/ipfs/${CID}`)
+        .then(response => response.text())
+        .then(data => {
+        settextAreaString(data);
         });
+      }
+      else {
+        alert("ERROR: Incorrect or empty filename")
+      }
+      
     } catch (error) {
       console.log(error);
     }
@@ -87,28 +120,39 @@ function App() {
 
   const editOldNote = async(APITOKEN, fileName, textAreaString) => {
     try {
-      console.log(APITOKEN, fileName, textAreaString);
+      const val = findIteminArray(fileName);
+      if (fileName !== "" && val === true) {
       // Retrieve cid from the blockchain
       deleteOldNote(APITOKEN, fileName);
       addNewNote(APITOKEN, fileName, textAreaString);
       document.forms[0].reset();
       alert("Note edited");
-    } catch (error) {
+    }
+    else {
+      alert("ERROR: Incorrect or empty filename")
+    }
+   } catch (error) {
       console.log(error);
     }
   };
 
   const deleteOldNote = async(APITOKEN, fileName) => {
     try {
+      const val = findIteminArray(fileName);
+      if (fileName !== "" && val === true) {
       // retrieve the CID using the fileName
-    const transactionContract = getEthereumContract();
-    const CID = await transactionContract.getNoteCID(fileName);
-    const client = new NFTStorage({ token: APITOKEN });
-    await client.delete(CID);
-    // delete the the Note struct on the blockchain based on the Note file name
-    await transactionContract.deleteNoteInfo(fileName);
-    // update the Display File Names list
-    document.forms[0].reset();
+      const transactionContract = getEthereumContract();
+      const CID = await transactionContract.getNoteCID(fileName);
+      const client = new NFTStorage({ token: APITOKEN });
+      await client.delete(CID);
+      // delete the the Note struct on the blockchain based on the Note file name
+      await transactionContract.deleteNoteInfo(fileName);
+      document.forms[0].reset();
+      alert("Note deleted");
+    }
+      else {
+        alert("Incorrect filename. Please try again.");
+      }
     } catch (error) {
       console.log(error);
     }
@@ -117,10 +161,9 @@ function App() {
   const displayNotes = async() => {
     try {
       const transactionContract = getEthereumContract();
-    //You should obtain an string of file names separated by an underscore
+    //You should obtain a string of file names separated by an underscore
     const text_Notes = await transactionContract.getAllNoteNames();
     notesArray = text_Notes.split(" ");
-
     for (var i=0; i<notesArray.length; i++) {
       if (notesArray[i].length === 0) {
         notesArray.splice(i,1);
