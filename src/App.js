@@ -16,12 +16,15 @@ function App() {
   const [textAreaString, settextAreaString] = useState("");
   const [fileName, setfileName] = useState("");
   const [walletAddress, setwalletAddress] = useState(null);
+  const [readOnly, setreadOnly] = useState(false);
 
   const getChainID = async(provider) => {
     const {chainId} =  await provider.getNetwork();
     if (chainId !== CHAIN_ID) {
+      setreadOnly(true);
       window.alert(`Please switch to the ${NETWORK_NAME} network`);
       throw new Error(`Please switch to the ${NETWORK_NAME} network`);
+
     }
   }
 
@@ -189,14 +192,14 @@ function App() {
       </div>
       <form id = "myForm" onSubmit={handleSubmit} className = "center">
       <br/>
-      <input type = "text" placeholder = "Enter filename" value = {fileName} onChange={(e)=>(setfileName(e.target.value))} name = "txtfile" />
+      <input type = "text" placeholder = "Enter filename" disabled = {readOnly} value = {fileName} onChange={(e)=>(setfileName(e.target.value))} name = "txtfile" />
       <br/>
-        <textarea defaultValue = {textAreaString} placeholder = "Enter Note text here" onChange={(e)=>(settextAreaString(e.target.value))} name = "Content" rows={10} cols={60}/> <br/>
+        <textarea defaultValue = {textAreaString} disabled = {readOnly} placeholder = "Enter Note text here" onChange={(e)=>(settextAreaString(e.target.value))} name = "Content" rows={10} cols={60}/> <br/>
       </form>
       <div className = "bottom">
         <button type = "submit" form = "myForm">Create Note</button>
-        <Button type = "button" onClick={() => retrieveOldNote(fileName)} text = "Read Note" />
-        <Button type = "button" onClick={() => editOldNote(APITOKEN, fileName, textAreaString)} text = "Edit Note"/>
+        <Button type = "button"  onClick={() => retrieveOldNote(fileName)} text = "Read Note" />
+        <Button type = "button"  onClick={() => editOldNote(APITOKEN, fileName, textAreaString)} text = "Edit Note"/>
         <Button type = "button" onClick={() => deleteOldNote(APITOKEN, fileName)} text = "Delete Note" /> <br/> <br/> <br/>
       </div>
       <div>
