@@ -126,8 +126,8 @@ function App() {
       const val = findIteminArray(fileName);
       if (fileName !== "" && val === true) {
       // Retrieve cid from the blockchain
-      deleteOldNote(APITOKEN, fileName);
-      addNewNote(APITOKEN, fileName, textAreaString);
+      await deleteOldNote(APITOKEN, fileName);
+      await addNewNote(APITOKEN, fileName, textAreaString);
       document.forms[0].reset();
       alert("Note edited");
     }
