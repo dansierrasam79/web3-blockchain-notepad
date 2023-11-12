@@ -77,8 +77,9 @@ function App() {
     e.preventDefault();
     const formText = e.target.elements.Content;
     const val = findIteminArray(fileName);
-    if (fileName !== "" && formText.value !== "" && val === false) {
-      addNewNote(APITOKEN, fileName, formText.value);
+    let finalFinalFileName = fileName.replace(/\s/g, "");
+    if (finalFinalFileName !== "" && formText.value !== "" && val === false) {
+      addNewNote(APITOKEN, finalFinalFileName, formText.value);
       document.forms[0].reset();
     }
     else {
@@ -154,7 +155,7 @@ function App() {
       alert("Note deleted");
     }
       else {
-        alert("Incorrect filename. Please try again.");
+        alert("Incorrect or empty filename. Please try again.");
       }
     } catch (error) {
       console.log(error);
