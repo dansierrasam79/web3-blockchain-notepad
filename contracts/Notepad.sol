@@ -33,18 +33,29 @@ contract Notepad {
         for (uint i = 0; i < user[msg.sender].length; i++) {
             string memory text = user[msg.sender][i].fileName;
             myNotes = string.concat(text,myNotes);
-            myNotes = string.concat("_",myNotes);
+            myNotes = string.concat(" ",myNotes);
         }
         return myNotes;
     }
 
     // this function will delete a Note containing the fileName that is passed in
     function deleteNoteInfo(string memory _fileName) public {
+        uint idx;
         for (uint i = 0; i < user[msg.sender].length; i++) {
             if ((keccak256(abi.encodePacked(bytes(_fileName))) == keccak256(abi.encodePacked(user[msg.sender][i].fileName)))){
+                idx = i;
                 delete user[msg.sender][i];
             }
         }
+
+        for (uint i = idx; i < user[msg.sender].length-1;i++) {
+            user[msg.sender][i] = user[msg.sender][i+1];
+        }
+        user[msg.sender].pop();
+    }
+
+    function returnNoteLengths() public view returns (uint256) {
+        return user[msg.sender].length;
     }
 
 }
